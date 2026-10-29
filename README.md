@@ -2,9 +2,12 @@
 
 Windows Tkinter dashboard with simulation mode and read-only USB serial
 monitoring. Hardware mode opens separate serial connections to Units A, B, and
-C at the documented 115200 baud. It does not send commands. Until the firmware
-source and message contract are verified, serial lines are diagnostic text only
-and cannot create a decision or RTT trial.
+C at 115200 baud. It does not send commands. The firmware source has been reviewed from the local project copy. Firmware
+sketches are excluded from this public repository pending credential cleanup.
+The protocol mapping is documented in
+[`docs/firmware_integration.md`](docs/firmware_integration.md), but hardware
+messages are not yet integrated into dashboard decisions or trial records.
+Serial lines remain diagnostic text only.
 
 ## Install and run
 
@@ -50,24 +53,27 @@ to enable port controls. Simulation and hardware modes are clearly labeled.
    refresh the port list. Close Arduino Serial Monitor or other software that
    may already have the port open.
 
-The worker reads LF-terminated lines and tolerates CRLF. The actual firmware
-line endings are not available for verification. A partial line returned on a
+The worker reads LF-terminated lines and tolerates CRLF. The firmware source
+uses line-oriented output with mixed `println` and `printf` calls; exact bytes
+have not been captured from the physical boards. A partial line returned on a
 read timeout is logged as incomplete and is not parsed.
 
-## Verified and unresolved firmware interface
+## Firmware integration status
 
-The project directory contains no ESP32 firmware source. The design brief
-documents 115200 baud for all three units and mentions candidate text such as
-`PN532 ready`, `Relay status: connected`, `Decision for ...`, and `[CALIB] ...
-rtt=...`; it does not define exact line endings, full formats, startup order,
-response timing, or command acknowledgements. The parsers mark these examples
-as unverified candidates only. No command is sent on connect or by the UI, and
-hardware serial text is never turned into a decision or RTT trial.
-Hardware trial parsing, status interpretation, and route/calibration/threshold/
-relay-delay commands remain disabled pending verified firmware source or
-representative serial logs. Enrollment, erase, and provisioning commands are
-also unsupported. The current hardware mode only opens and monitors USB serial
-ports.
+The local project copy includes Unit A, Unit B, and Unit C firmware source;
+the sketches are excluded from this public repository pending credential
+cleanup. The source-backed baud rates, serial commands, output examples,
+measurement ownership, and limitations are recorded in
+[`docs/firmware_integration.md`](docs/firmware_integration.md). No physical
+serial capture has been made, so line endings and startup timing should still
+be checked on the actual board/core combination before relying on text parsing.
+
+The dashboard remains read-only: it sends no commands and does not convert
+serial text into a decision or RTT trial. Decision parsing, firmware status
+interpretation, and hardware trial recording are not implemented. Enrollment,
+erase, provisioning, route, calibration, threshold, and relay-delay controls
+must not be driven from the dashboard until a later integration change adds
+explicit supported behavior. Simulation remains the default mode.
 
 Diagnostics are kept in a bounded in-memory log and redact common secret, PSK,
 HMAC, key, UID, and long-token patterns. No card secret is requested or stored.
